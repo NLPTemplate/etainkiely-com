@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Publications — Etain Kiely</title>
+  <meta name="description" content="Dr Etain Kiely — mathematics & computing educator at ATU. Student‑centred teaching, mastery, learning analytics.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Playfair+Display:wght@500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+  
+<header class="site-header">
+  <div class="container">
+    <a class="brand" href="index.html">Etain Kiely</a>
+    <nav class="nav" aria-label="Main navigation">
+      <button id="navToggle" class="nav-toggle" aria-expanded="false" aria-controls="navMenu">Menu</button>
+      <ul id="navMenu" class="nav-menu">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="about.html">About</a></li>
+        <li><a href="research.html">Research & Projects</a></li>
+        <li><a class="active" href="publications.html">Publications</a></li>
+        <li><a href="teaching.html">Teaching</a></li>
+        <li><a href="contact.html">Contact</a></li>
+      </ul>
+    </nav>
+    <button id="themeToggle" class="theme-toggle" aria-label="Toggle theme">Theme</button>
+  </div>
+</header>
+
+  <main>
+    
+<section class="page-header">
+  <div class="container narrow">
+    <h1>Publications</h1>
+    <p class="lead">Search, filter, and explore outputs. Upload a BibTeX (.bib) or Google Scholar CSV to render the list, or load a bundled sample.</p>
+  </div>
+</section>
+<section class="section">
+  <div class="container">
+    <div class="card" style="padding:1rem;">
+      <label for="pubFile"><strong>Load publications</strong> (.bib or .csv)</label><br>
+      <input type="file" id="pubFile" accept=".bib,.csv">
+      <button class="button" id="loadBundled">Load bundled BibTeX</button>
+      <div class="grid-2" style="margin-top:1rem;">
+        <div>
+          <label><strong>Search</strong></label>
+          <input id="pubSearch" type="text" placeholder="title, author, venue, year" style="width:100%;padding:.6rem;border-radius:10px;border:1px solid var(--ring);background:var(--card);color:var(--text);">
+        </div>
+        <div>
+          <label><strong>Sort by</strong></label>
+          <select id="pubSort" style="width:100%;padding:.6rem;border-radius:10px;border:1px solid var(--ring);background:var(--card);color:var(--text);">
+            <option value="year-desc">Year (new → old)</option>
+            <option value="year-asc">Year (old → new)</option>
+            <option value="title-asc">Title (A → Z)</option>
+            <option value="title-desc">Title (Z → A)</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div id="pubList" style="margin-top:1rem;"></div>
+  </div>
+</section>
+<script src="assets/publications.js"></script>
+
+  </main>
+  
+<footer class="site-footer">
+  <div class="container">
+    <p>© <span id="year"></span> Dr. Etain Kiely. All rights reserved.</p>
+    <p class="small">Built with care for students, equity, and curiosity.</p>
+  </div>
+</footer>
+
+  <script src="assets/main.js"></script>
+</body>
+</html>
