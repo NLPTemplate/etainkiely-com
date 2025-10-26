@@ -1,0 +1,35 @@
+name: Import images
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  import:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies if present
+        run: |
+          if [ -f requirements.txt ]; then
+            python -m pip install --upgrade pip
+            pip install -r requirements.txt
+          fi
+
+      - name: Run import script if present
+        run: |
+          if [ -f scripts/import_images.py ]; then
+            python scripts/import_images.py
+          else
+            echo "scripts/import_images.py not found; skipping."
+          fi
