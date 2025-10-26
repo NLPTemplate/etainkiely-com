@@ -1,5 +1,7 @@
 # Automated import + image optimization for etainkiely-com
 # Trigger: manual (workflow_dispatch). Optional input: google_sites_url (comma-separated).
+name: Import images and optimize
+
 on:
   workflow_dispatch:
     inputs:
@@ -9,6 +11,10 @@ on:
       include_at_repos:
         description: 'Comma-separated additional public repos to clone (default: ATU-Computational-Math/etainkiely-com)'
         required: false
+
+permissions:
+  contents: write
+  pull-requests: write
 
 jobs:
   import_images:
@@ -66,7 +72,7 @@ jobs:
       - name: Prioritize candidates by filename keywords
         run: |
           mkdir -p out/selected
-          cd out/candidates
+          cd out/candidates || exit 0
           KEYWORDS="student|students|group|presentation|poster|celtic|knot|fern|fractal|diagram|screenshot|game|playtest|play-test"
           for f in *; do
             if echo "$f" | grep -Ei "$KEYWORDS" >/dev/null 2>&1; then
@@ -83,19 +89,21 @@ jobs:
         run: |
           mkdir -p assets/images/imported
           python3 - <<'PY'
-import os,subprocess,json
+import os,subprocess,json,datetime
 src='out/selected'
-out='assets/images/imported'
 if not os.path.isdir(src):
     src='out/candidates'
+out='assets/images/imported'
+if not os.path.isdir(out):
+    os.makedirs(out, exist_ok=True)
 records=[]
+sizes=[480,1024,2048]
 for fn in sorted(os.listdir(src)):
     srcp=os.path.join(src,fn)
     base=os.path.splitext(fn)[0]
     safe=''.join(c if c.isalnum() or c in '-._' else '-' for c in base).lower()
     dest_prefix=os.path.join(out,safe)
     os.makedirs(os.path.dirname(dest_prefix),exist_ok=True)
-    sizes=[480,1024,2048]
     size_files={}
     for s in sizes:
         jpg=f"{dest_prefix}-{s}.jpg"
@@ -103,20 +111,20 @@ for fn in sorted(os.listdir(src)):
             subprocess.run(['convert', srcp, '-strip', '-resize', f'{s}x', '-quality', '82', jpg], check=True)
             webp=f"{dest_prefix}-{s}.webp"
             subprocess.run(['cwebp','-q','82', jpg, '-o', webp], check=True)
-            size_files[str(s)]={'jpg':jpg,'webp':webp}
-        except Exception:
-            pass
-    records.append({'source':srcp,'slug':safe,'sizes':size_files})
+            size_files[str(s)]={'jpg':os.path.relpath(jpg),'webp':os.path.relpath(webp)}
+        except Exception as e:
+            print('conversion failed for', srcp, 'size', s, 'error', e)
+    records.append({'source':os.path.relpath(srcp),'slug':safe,'sizes':size_files})
 with open('assets/images/imported/manifest.json','w') as f:
-    json.dump({'generated_at':__import__('datetime').datetime.utcnow().isoformat()+'Z','count':len(records),'images':records},f,indent=2)
-print("manifest written with",len(records))
+    json.dump({'generated_at':datetime.datetime.utcnow().isoformat()+'Z','count':len(records),'images':records},f,indent=2)
+print('Wrote manifest with',len(records))
 PY
           ls -la assets/images/imported | sed -n '1,200p'
 
       - name: Create branch & open PR with imported images
         uses: peter-evans/create-pull-request@v5
         with:
-          branch: images/import-from-scan-${{ github.run_id }}
+          branch: "images/import-from-scan-${{ github.run_id }}"
           commit-message: "chore(images): import candidate images and manifest (automated scan)"
           title: "Import candidate images — automated scan"
           body: |
@@ -126,4 +134,8 @@ PY
 
       - name: Show manifest summary
         run: |
-          jq '. | {generated_at: .generated_at, count: .count} + (.images[0:10] | {sample: .})' assets/images/imported/manifest.json || true
+          if [ -f assets/images/imported/manifest.json ]; then
+            jq '. | {generated_at: .generated_at, count: .count} + (.images[0:10] | {sample: .})' assets/images/imported/manifest.json || true
+          else
+            echo "No manifest found"
+          fi
